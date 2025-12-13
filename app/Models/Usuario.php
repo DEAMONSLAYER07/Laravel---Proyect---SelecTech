@@ -20,6 +20,12 @@ class Usuario extends Authenticatable
 
     protected $hidden = ['password'];
 
+    // función para hashear la contraseña al asignarla
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = Hash::make($value);
+    }
+
     public function vacantes()
     {
         return $this->hasMany(Vacante::class, 'id_reclutador');

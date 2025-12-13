@@ -8,13 +8,12 @@ use Illuminate\Http\Request;
 class FichaTrabajoController extends Controller
 {
     /**
-     * Mostrar lista de fichas
+     * Redirigir al dashboard (la vista index ya no existe)
      */
     public function index()
     {
-        $fichas = FichaTrabajo::orderBy('created_at', 'desc')->get();
-
-        return view('rh.fichas.index', compact('fichas'));
+        return redirect()->route('rh.dashboard')
+            ->with('info', 'Gestiona las fichas desde el panel de control.');
     }
 
 
@@ -28,7 +27,7 @@ class FichaTrabajoController extends Controller
 
 
     /**
-     * Guardar ficha (VERSIÓN SIN ERRORES DE BD)
+     * Guardar ficha
      */
     public function store(Request $request)
     {
@@ -43,19 +42,16 @@ class FichaTrabajoController extends Controller
             'estado' => 'required|in:Activa,Cerrada',
         ]);
 
-        // CAMPOS QUE LA BD EXIGE PERO TU FORM NO ENVÍA:
+        // Campos que la BD exige
         $validated['id_postulante'] = auth()->id();
         $validated['area'] = $request->input('area', 'General');
-
-        // EVITAR ERROR: ESTA COLUMNA ES INT, NO TEXTO
-        $validated['carta_recomendacion'] = 0; // 0 = No
-
+        $validated['carta_recomendacion'] = 0;
         $validated['archivo_carta'] = null;
         $validated['observaciones'] = $request->input('observaciones', '');
 
         FichaTrabajo::create($validated);
 
-        return redirect()->route('fichas.index')
+        return redirect()->route('rh.dashboard')
             ->with('success', 'Ficha de trabajo creada correctamente.');
     }
 
@@ -90,17 +86,14 @@ class FichaTrabajoController extends Controller
         ]);
 
         $validated['area'] = $request->input('area', $ficha->area ?? 'General');
-
-        // MISMA LÓGICA: ES UN ENTERO
         $validated['carta_recomendacion'] = $ficha->carta_recomendacion ?? 0;
-
         $validated['archivo_carta'] = $ficha->archivo_carta;
         $validated['observaciones'] = $request->input('observaciones', $ficha->observaciones ?? '');
         $validated['id_postulante'] = $ficha->id_postulante;
 
         $ficha->update($validated);
 
-        return redirect()->route('fichas.index')
+        return redirect()->route('rh.dashboard')
             ->with('success', 'Ficha actualizada correctamente.');
     }
 
@@ -112,7 +105,7 @@ class FichaTrabajoController extends Controller
     {
         FichaTrabajo::destroy($id);
 
-        return redirect()->route('fichas.index')
+        return redirect()->route('rh.dashboard')
             ->with('success', 'Ficha eliminada correctamente.');
     }
 }
